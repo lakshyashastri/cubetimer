@@ -56,7 +56,13 @@
 	left: 30px;
 	width: 400px;
 	max-width: calc(50vw - 45px);
-	/* transition is already on .panel */
+	/* transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); is inherited from .panel */
+	/* Explicitly add 'top' to transition if 'all' is too broad or causes issues */
+	/* transition-property: top, opacity, visibility, transform; */ /* More specific if needed */
+}
+
+.timesPanelShiftedUp {
+	top: 30px;
 }
 
 /* Panel Header */

@@ -4,20 +4,22 @@ import TimerDisplay from './components/TimerDisplay';
 import StatsPanel from './components/StatsPanel';
 import ActionButton from './components/ActionButton';
 import './index.css'; // Global styles
+import appStyles from './App.module.css'; // For app-specific layout styles
+import timerDisplayStyles from './components/TimerDisplay.module.css'; // For timerWrapper
 
-// Initial panel visibility state
+// Initial panel visibility state - set to false for default hidden
 const initialPanelVisibility = {
-  overview: true,
-  averages: true,
-  times: true,
-  chart: true,
+  overview: false,
+  averages: false,
+  times: false,
+  chart: false,
 };
 
 function App() {
   const {
     timerDisplay,
     timerState,
-    currentTime,
+    // currentTime, // Not directly used in App's render
     times,
     stats,
     averages,
@@ -27,7 +29,6 @@ function App() {
     startTimer,
     stopTimer,
     resetToReady,
-    // saveTime, // Not directly used by App, but by stopTimer
     deleteTime,
     clearAllTimes,
     minPrepareTime,
@@ -35,7 +36,7 @@ function App() {
   } = useCubeTimer();
 
   const [panelVisibility, setPanelVisibility] = useState(initialPanelVisibility);
-  const [isSpacePressed, setIsSpacePressed] = useState(false);
+  // const [isSpacePressed, setIsSpacePressed] = useState(false); // Not directly needed in App state
 
   const togglePanel = (panelName) => {
     setPanelVisibility(prev => ({ ...prev, [panelName]: !prev[panelName] }));
@@ -44,37 +45,38 @@ function App() {
   const toggleAllPanels = () => {
     const anyPanelVisible = Object.values(panelVisibility).some(visible => visible);
     if (anyPanelVisible) {
+      // If any panel is visible, hide all
       setPanelVisibility({ overview: false, averages: false, times: false, chart: false });
     } else {
-      setPanelVisibility(initialPanelVisibility);
+      // If no panels are visible, show all (or a default set)
+      setPanelVisibility({ overview: true, averages: true, times: true, chart: true });
     }
   };
   
-  // Timer control logic from useCubeTimer, adapted for spacebar
   const handleKeyDown = useCallback((e) => {
     if (e.code !== 'Space' || e.repeat) return;
     e.preventDefault();
-    setIsSpacePressed(true);
+    // setIsSpacePressed(true); // Managed by keyUp
 
     if (timerState === 'ready') {
       startPreparing();
     } else if (timerState === 'running') {
       stopTimer();
-    } else if (timerState === 'stopped') {
+    } else if (timerState === 'stopped') { // Allow resetting from stopped state
       resetToReady();
     }
   }, [timerState, startPreparing, stopTimer, resetToReady]);
 
   const handleKeyUp = useCallback((e) => {
     if (e.code !== 'Space') return;
-    setIsSpacePressed(false);
+    // setIsSpacePressed(false);
 
     if (timerState === 'preparing') {
-      const prepareTime = Date.now() - prepareStartTime;
+      const prepareTime = Date.now() - (prepareStartTime || 0); // Ensure prepareStartTime is not null
       if (prepareTime >= minPrepareTime) {
         startTimer();
       } else {
-        resetToReady(); // Not held long enough
+        resetToReady(); 
       }
     }
   }, [timerState, prepareStartTime, minPrepareTime, startTimer, resetToReady]);
@@ -88,15 +90,20 @@ function App() {
     };
   }, [handleKeyDown, handleKeyUp]);
 
+  const isAnyPanelVisible = Object.values(panelVisibility).some(visible => visible);
+
   return (
-    <>
-      <TimerDisplay displayTime={timerDisplay} timerState={timerState} />
+    // Using a fragment as appStyles.appContainer isn't strictly necessary yet
+    <> 
+      <div className={`${timerDisplayStyles.timerWrapper} ${isAnyPanelVisible ? appStyles.timerAreaShifted : ''}`}>
+        <TimerDisplay displayTime={timerDisplay} timerState={timerState} />
+      </div>
       <ActionButton onTogglePanels={toggleAllPanels} />
       <StatsPanel
         panelVisibility={panelVisibility}
         togglePanel={togglePanel}
         stats={stats}
-        averagesData={{ averages, bestAverages }} // Pass both current and best
+        averagesData={{ averages, bestAverages }}
         times={times}
         formatTime={formatTime}
         deleteTime={deleteTime}

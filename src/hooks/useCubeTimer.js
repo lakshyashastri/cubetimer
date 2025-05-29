@@ -1,39 +1,31 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 const useCubeTimer = () => {
   // --- Timer State ---
-  const [timerDisplay, setTimerDisplay] = useState('READY'); // What's shown on the timer
+  const [timerDisplay, setTimerDisplay] = useState('READY');
   const [timerState, setTimerState] = useState('ready'); // 'ready', 'preparing', 'running', 'stopped'
-  const [currentTime, setCurrentTime] = useState(0); // Raw time in ms for the running timer
+  const [currentTime, setCurrentTime] = useState(0);
 
   // --- Data State ---
-  const [times, setTimes] = useState([]); // Array of time entries { id, time, date }
+  const [times, setTimes] = useState([]);
   const [stats, setStats] = useState({
     totalSolves: 0,
     bestTime: null,
     worstTime: null,
     medianTime: null,
-    averageTime: null, // Overall average
+    averageTime: null,
   });
   const [averages, setAverages] = useState({
-    ao5: null,
-    ao12: null,
-    ao25: null,
-    ao50: null,
-    ao100: null,
+    ao5: null, ao12: null, ao25: null, ao50: null, ao100: null,
   });
-  const [bestAverages, setBestAverages] = useState({ // Best Ao5, Ao12, etc.
-    ao5: null,
-    ao12: null,
-    ao25: null,
-    ao50: null,
-    ao100: null,
+  const [bestAverages, setBestAverages] = useState({
+    ao5: null, ao12: null, ao25: null, ao50: null, ao100: null,
   });
 
-  // --- Internal Timer Logic State ---
-  const [startTime, setStartTime] = useState(null); // `performance.now()` when timer starts
+  // --- Internal Timer Logic Refs and State ---
+  const startTimeRef = useRef(null);
+  const intervalIdRef = useRef(null);
   const [prepareStartTime, setPrepareStartTime] = useState(null);
-  const [intervalId, setIntervalId] = useState(null);
   const minPrepareTime = 100; // ms
 
   // --- Load initial data from localStorage ---
@@ -41,20 +33,20 @@ const useCubeTimer = () => {
     const loadedTimes = JSON.parse(localStorage.getItem('cubeTimerTimes') || '[]');
     setTimes(loadedTimes);
     const loadedBestAverages = JSON.parse(localStorage.getItem('cubeTimerBestAverages') || '{}');
-    setBestAverages(prev => ({ ...prev, ...loadedBestAverages })); // Merge to keep initial structure
+    setBestAverages(prev => ({ ...prev, ...loadedBestAverages }));
   }, []);
 
-  // --- Save data to localStorage ---
+  // --- Save data to localStorage & Update Stats ---
   useEffect(() => {
     localStorage.setItem('cubeTimerTimes', JSON.stringify(times));
-    updateStats(); // Recalculate stats whenever times change
+    updateStats(); 
   }, [times]);
 
   useEffect(() => {
     localStorage.setItem('cubeTimerBestAverages', JSON.stringify(bestAverages));
   }, [bestAverages]);
 
-  // --- Helper Functions ---
+  // --- Helper Functions (memoized) ---
   const formatTime = useCallback((milliseconds) => {
     if (milliseconds === null || milliseconds === undefined || isNaN(milliseconds)) {
       return "--";
@@ -63,15 +55,13 @@ const useCubeTimer = () => {
     const minutes = Math.floor(totalMs / 60000);
     const seconds = Math.floor((totalMs % 60000) / 1000);
     const centiseconds = Math.floor((totalMs % 1000) / 10);
-
     if (minutes > 0) {
       return `${minutes}:${seconds.toString().padStart(2, "0")}.${centiseconds.toString().padStart(2, "0")}`;
-    } else {
-      return `${seconds}.${centiseconds.toString().padStart(2, "0")}`;
     }
+    return `${seconds}.${centiseconds.toString().padStart(2, "0")}`;
   }, []);
 
-  const calculateMedian = (timeValues) => {
+  const calculateMedian = useCallback((timeValues) => {
     if (!timeValues || timeValues.length === 0) return null;
     const sortedValues = [...timeValues].sort((a, b) => a - b);
     const length = sortedValues.length;
@@ -79,40 +69,57 @@ const useCubeTimer = () => {
       const mid1 = sortedValues[length / 2 - 1];
       const mid2 = sortedValues[length / 2];
       return (mid1 + mid2) / 2;
-    } else {
-      return sortedValues[Math.floor(length / 2)];
     }
-  };
+    return sortedValues[Math.floor(length / 2)];
+  }, []);
 
-  const calculateAverageFromValues = (timeValues, N) => {
-    if (!timeValues || timeValues.length < N) return null;
-    let valuesToAverage = [...timeValues];
+  // Updated average calculation logic
+  const calculateAverageFromValues = useCallback((timeValuesInput, N) => {
+    // Ensure we are working with an array of N numbers
+    if (!timeValuesInput || timeValuesInput.length !== N) return null;
+    
+    // Filter out any non-numeric or null times to be safe, though data should be clean
+    const timeValues = timeValuesInput.filter(t => typeof t === 'number' && !isNaN(t));
+    if (timeValues.length !== N) return null; // If filtering changed length, input was not N valid numbers
+
+    if (N < 3) return null; // Meaningful average requires at least 3 times (e.g., Ao3)
+
+    const sortedTimes = [...timeValues].sort((a, b) => a - b);
+
     if (N >= 5) {
-      valuesToAverage.sort((a, b) => a - b);
-      const trimCount = Math.ceil(N * 0.05);
-      if (valuesToAverage.length <= trimCount * 2) return null;
-      const trimmedTimes = valuesToAverage.slice(trimCount, valuesToAverage.length - trimCount);
-      if (trimmedTimes.length === 0) return null;
-      return trimmedTimes.reduce((sum, time) => sum + time, 0) / trimmedTimes.length;
-    } else {
-      if (valuesToAverage.length === 0) return null;
-      return valuesToAverage.reduce((sum, time) => sum + time, 0) / valuesToAverage.length;
+      // Standard cubing average: remove 1 best and 1 worst
+      const trimmedTimes = sortedTimes.slice(1, -1); 
+      // This slice handles N=5 (slice(1,4) -> 3 items), N=12 (slice(1,11) -> 10 items)
+      // If N is large, e.g. N=100, slice(1, 99) -> 98 items.
+      // This is the standard for Ao5, Ao12, etc.
+      // For larger N like Ao50, Ao100, the 5% rule might be used elsewhere,
+      // but for typical speedcubing AoX, it's 1 best/1 worst.
+      // If the problem implies a strict 5% for *all* N>=5, this part would need adjustment.
+      // Assuming 1 best/1 worst for N>=5 as per common cubing practice for Ao5/Ao12.
+      if (trimmedTimes.length === 0) return null; // Should not happen if N >= 3 after slice(1,-1) from N>=5
+      return trimmedTimes.reduce((sum, t) => sum + t, 0) / trimmedTimes.length;
+    } else { 
+      // For N = 3 or N = 4 (simple mean of all N times)
+      return sortedTimes.reduce((sum, t) => sum + t, 0) / sortedTimes.length;
     }
-  };
+  }, []);
 
-  const calculateCurrentAverage = (N) => {
+  const calculateCurrentAverage = useCallback((N) => {
     if (times.length < N) return null;
+    // Get the N most recent times for "current" average
     const recentTimesValues = times.slice(0, N).map(t => t.time);
-    return calculateAverageFromValues(recentTimesValues, N);
-  };
+    return calculateAverageFromValues(recentTimesValues, N); // Pass exactly N times
+  }, [times, calculateAverageFromValues]);
 
-  const findOverallBestAverage = (N) => {
+  const findOverallBestAverage = useCallback((N) => {
     if (times.length < N) return null;
     let overallBest = null;
+    // Iterate through all possible contiguous segments of N times
     for (let i = 0; i <= times.length - N; i++) {
       const windowTimeEntries = times.slice(i, i + N);
       const windowTimeValues = windowTimeEntries.map(t => t.time);
-      const currentWindowAvg = calculateAverageFromValues(windowTimeValues, N);
+      // Pass exactly N times to calculateAverageFromValues
+      const currentWindowAvg = calculateAverageFromValues(windowTimeValues, N); 
       if (currentWindowAvg !== null) {
         if (overallBest === null || currentWindowAvg < overallBest) {
           overallBest = currentWindowAvg;
@@ -120,42 +127,35 @@ const useCubeTimer = () => {
       }
     }
     return overallBest;
-  };
+  }, [times, calculateAverageFromValues]);
 
   const updateStats = useCallback(() => {
     const totalSolves = times.length;
     if (totalSolves === 0) {
-      setStats({
-        totalSolves: 0,
-        bestTime: null,
-        worstTime: null,
-        medianTime: null,
-        averageTime: null,
-      });
+      setStats({ totalSolves: 0, bestTime: null, worstTime: null, medianTime: null, averageTime: null });
       setAverages({ ao5: null, ao12: null, ao25: null, ao50: null, ao100: null });
-      // Best averages are not cleared here, they persist unless explicitly cleared
       return;
     }
-
     const timeValues = times.map(t => t.time);
     const bestTime = Math.min(...timeValues);
     const worstTime = Math.max(...timeValues);
     const medianTime = calculateMedian(timeValues);
-    const averageTime = timeValues.reduce((sum, t) => sum + t, 0) / totalSolves;
-
+    const averageTime = timeValues.reduce((sum, t) => sum + t, 0) / totalSolves; // Overall mean
     setStats({ totalSolves, bestTime, worstTime, medianTime, averageTime });
 
     const newAverages = {};
-    const newBestAverages = { ...bestAverages }; // Start with current bests
-    const avgSizes = [5, 12, 25, 50, 100];
+    const newBestAverages = { ...bestAverages }; // Preserve existing bests
+    const avgSizes = [5, 12, 25, 50, 100]; // Standard average categories
 
     for (const size of avgSizes) {
       const currentNMostRecentAvg = calculateCurrentAverage(size);
-      newAverages[`ao${size}`] = currentNMostRecentAvg;
+      newAverages[`ao${size}`] = currentNMostRecentAvg; 
 
+      // Only update best average if there are enough solves for that category
       if (times.length >= size) {
         const overallBestForSize = findOverallBestAverage(size);
         if (overallBestForSize !== null) {
+          // If no current best for this size, or new one is better
           if (newBestAverages[`ao${size}`] === null || overallBestForSize < newBestAverages[`ao${size}`]) {
             newBestAverages[`ao${size}`] = overallBestForSize;
           }
@@ -164,115 +164,100 @@ const useCubeTimer = () => {
     }
     setAverages(newAverages);
     setBestAverages(newBestAverages);
-  }, [times, bestAverages]); // Added bestAverages to dependency array
+  }, [times, bestAverages, calculateMedian, calculateCurrentAverage, findOverallBestAverage]);
 
   // --- Timer Control Functions ---
   const startPreparing = useCallback(() => {
     setTimerState('preparing');
     setPrepareStartTime(Date.now());
     setTimerDisplay('HOLD...');
-    setCurrentTime(0); // Reset current time display
+    setCurrentTime(0);
   }, []);
 
   const startTimer = useCallback(() => {
     setTimerState('running');
-    setStartTime(performance.now());
-    if (intervalId) clearInterval(intervalId); // Clear any existing interval
-    const newIntervalId = setInterval(() => {
-      setCurrentTime(performance.now() - startTime);
+    startTimeRef.current = performance.now();
+    setCurrentTime(0); 
+    setTimerDisplay(formatTime(0));
+
+    if (intervalIdRef.current) clearInterval(intervalIdRef.current);
+    intervalIdRef.current = setInterval(() => {
+      if (startTimeRef.current !== null) {
+        setCurrentTime(performance.now() - startTimeRef.current);
+      }
     }, 10);
-    setIntervalId(newIntervalId);
-  }, [intervalId, startTime]); // Added startTime to dependency array
+  }, [formatTime]); 
 
   const stopTimer = useCallback(() => {
-    if (timerState !== 'running') return;
+    if (timerState !== 'running' || startTimeRef.current === null) return;
 
-    clearInterval(intervalId);
-    setIntervalId(null);
-    const endTime = performance.now();
-    const finalTime = endTime - (startTime || performance.now()); // Ensure startTime is not null
+    if (intervalIdRef.current) {
+      clearInterval(intervalIdRef.current);
+      intervalIdRef.current = null;
+    }
+    
+    const finalTime = performance.now() - startTimeRef.current;
+    startTimeRef.current = null; 
 
     setTimerState('stopped');
-    setCurrentTime(finalTime); // Show final time
+    setCurrentTime(finalTime);
     setTimerDisplay(formatTime(finalTime));
 
-    // Save the time
     const newTimeEntry = {
       time: finalTime,
       date: new Date().toISOString(),
       id: Date.now(),
     };
-    setTimes(prevTimes => [newTimeEntry, ...prevTimes]); // Adds to beginning
-
-    // Reset to ready after a delay (this will be a new function)
-    // setTimeout(resetToReady, 2000); // This will be handled by a useEffect in the component or a direct call
-  }, [timerState, intervalId, startTime, formatTime]);
+    setTimes(prevTimes => [newTimeEntry, ...prevTimes]);
+  }, [timerState, formatTime]); 
 
   const resetToReady = useCallback(() => {
+    if (intervalIdRef.current) {
+      clearInterval(intervalIdRef.current);
+      intervalIdRef.current = null;
+    }
+    startTimeRef.current = null;
     setTimerState('ready');
     setTimerDisplay('READY');
     setCurrentTime(0);
-    if (intervalId) {
-      clearInterval(intervalId);
-      setIntervalId(null);
-    }
-  }, [intervalId]);
-
-  // --- Data Management Functions ---
-  const saveTime = useCallback((time) => { // This function might be redundant if stopTimer handles saving.
-                                         // However, it's here if manual time entry is ever needed.
-    const timeEntry = {
-      time: time,
-      date: new Date().toISOString(),
-      id: Date.now()
-    };
-    setTimes(prevTimes => [timeEntry, ...prevTimes]);
   }, []);
 
+  // --- Data Management Functions ---
+  const saveTime = useCallback((time) => {
+    const timeEntry = { time, date: new Date().toISOString(), id: Date.now() };
+    setTimes(prevTimes => [timeEntry, ...prevTimes]);
+  }, []);
 
   const deleteTime = useCallback((id) => {
     setTimes(prevTimes => prevTimes.filter(time => time.id !== id));
   }, []);
 
   const clearAllTimes = useCallback(() => {
-    // Consider adding a confirmation dialog in the component before calling this
     setTimes([]);
-    setBestAverages({ ao5: null, ao12: null, ao25: null, ao50: null, ao100: null }); // Reset best averages too
-    // updateStats will be called automatically by the useEffect watching `times`
+    setBestAverages({ ao5: null, ao12: null, ao25: null, ao50: null, ao100: null });
   }, []);
 
-  // --- Effect for timer display updates ---
+  // --- Effect for timer display updates during 'running' state ---
   useEffect(() => {
     if (timerState === 'running') {
       setTimerDisplay(formatTime(currentTime));
     }
   }, [currentTime, timerState, formatTime]);
   
-  // --- Effect to call updateStats on initial load or when times change ---
+  // Cleanup interval on unmount
   useEffect(() => {
-    updateStats();
-  }, [times, updateStats]);
+    return () => {
+      if (intervalIdRef.current) {
+        clearInterval(intervalIdRef.current);
+      }
+    };
+  }, []);
 
-
-  // --- Return values from the hook ---
   return {
-    timerDisplay,
-    timerState,
-    currentTime, // Raw time in ms for the timer
-    times,
-    stats,
-    averages,
-    bestAverages, // Expose best averages
-    formatTime,
-    startPreparing,
-    startTimer,
-    stopTimer,
-    resetToReady,
-    saveTime, // Potentially for manual entry
-    deleteTime,
-    clearAllTimes,
-    minPrepareTime, // Expose for spacebar handling in component
-    prepareStartTime, // Expose for spacebar handling logic in component
+    timerDisplay, timerState, currentTime, times, stats, averages, bestAverages,
+    formatTime, startPreparing, startTimer, stopTimer, resetToReady,
+    saveTime, deleteTime, clearAllTimes,
+    minPrepareTime, prepareStartTime,
   };
 };
 

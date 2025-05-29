@@ -15,17 +15,22 @@ const StatsPanel = ({
   deleteTime,
   clearAllTimes,
 }) => {
-  const { overview, averages, chart, times: timesPanelVisible } = panelVisibility; // Renamed 'times' from visibility to avoid conflict
+  const { overview: isOverviewVisible, averages: isAveragesVisible, chart: isChartVisible, times: isTimesPanelVisible } = panelVisibility;
+
+  // Condition for Times panel to shift up
+  const shouldTimesPanelShiftUp = !isOverviewVisible && isTimesPanelVisible;
 
   // Helper to build class names for panels
-  const getPanelClasses = (panelName, specificClass) => {
+  const getPanelClasses = (panelName, specificClass, isShifted = false, shiftedClass = '') => {
     let classList = `${styles.panel} ${specificClass}`;
     if (panelVisibility[panelName]) {
       classList += ` ${styles.visible}`;
-      // Special handling for chart centering when visible
-      if (panelName === 'chart') {
+      if (panelName === 'chart') { // Specific transform for chart when visible
         classList += ` ${styles.chartPanelVisibleTransform}`;
       }
+    }
+    if (isShifted) {
+      classList += ` ${shiftedClass}`;
     }
     return classList;
   };
@@ -39,7 +44,7 @@ const StatsPanel = ({
           <button onClick={() => togglePanel('overview')} className={styles.closeBtn} title="Close Overview">×</button>
         </div>
         <div className={styles.panelContent}>
-          {overview && <Overview stats={stats} formatTime={formatTime} />}
+          {isOverviewVisible && <Overview stats={stats} formatTime={formatTime} />}
         </div>
       </div>
 
@@ -50,7 +55,7 @@ const StatsPanel = ({
           <button onClick={() => togglePanel('averages')} className={styles.closeBtn} title="Close Averages">×</button>
         </div>
         <div className={styles.panelContent}>
-          {averages && <Averages averages={averagesData.averages} bestAverages={averagesData.bestAverages} formatTime={formatTime} timesCount={times.length} />}
+          {isAveragesVisible && <Averages averages={averagesData.averages} bestAverages={averagesData.bestAverages} formatTime={formatTime} timesCount={times.length} />}
         </div>
       </div>
       
@@ -61,18 +66,18 @@ const StatsPanel = ({
           <button onClick={() => togglePanel('chart')} className={styles.closeBtn} title="Close Chart">×</button>
         </div>
         <div className={styles.panelContent}>
-          {chart && <PerformanceChart times={times} formatTime={formatTime} />}
+          {isChartVisible && <PerformanceChart times={times} formatTime={formatTime} />}
         </div>
       </div>
 
       {/* Times List Panel */}
-      <div className={getPanelClasses('times', styles.timesPanel)}>
+      <div className={getPanelClasses('times', styles.timesPanel, shouldTimesPanelShiftUp, styles.timesPanelShiftedUp)}>
         <div className={styles.panelHeader}>
           <h3>Times</h3>
           <button onClick={() => togglePanel('times')} className={styles.closeBtn} title="Close Times List">×</button>
         </div>
         <div className={styles.panelContent}>
-          {timesPanelVisible && <TimesList times={times} formatTime={formatTime} onDeleteTime={deleteTime} onClearAllTimes={clearAllTimes} />}
+          {isTimesPanelVisible && <TimesList times={times} formatTime={formatTime} onDeleteTime={deleteTime} onClearAllTimes={clearAllTimes} />}
         </div>
       </div>
     </>
