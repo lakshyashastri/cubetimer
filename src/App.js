@@ -90,12 +90,13 @@ function App() {
     };
   }, [handleKeyDown, handleKeyUp]);
 
-  const isAnyPanelVisible = Object.values(panelVisibility).some(visible => visible);
+  // Updated logic: Timer area shifts only if the chart panel is visible
+  const shouldTimerAreaShift = panelVisibility.chart;
 
   return (
     // Using a fragment as appStyles.appContainer isn't strictly necessary yet
     <> 
-      <div className={`${timerDisplayStyles.timerWrapper} ${isAnyPanelVisible ? appStyles.timerAreaShifted : ''}`}>
+      <div className={`${timerDisplayStyles.timerWrapper} ${shouldTimerAreaShift ? appStyles.timerAreaShifted : ''}`}>
         <TimerDisplay displayTime={timerDisplay} timerState={timerState} />
       </div>
       <ActionButton onTogglePanels={toggleAllPanels} />

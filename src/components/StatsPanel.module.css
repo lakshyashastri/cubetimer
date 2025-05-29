@@ -9,15 +9,19 @@
 	z-index: 50;
 	opacity: 0;
 	visibility: hidden;
-	transform: translateY(20px);
-	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	/* transform: translateY(20px); */ /* Old transform */
+	transform: scale(0.95); /* New transform for hidden state */
+	/* transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); */ /* Old transition */
+	transition: opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0s linear 0.2s; /* New transition */
 	max-height: 500px; /* Default max-height, can be overridden by specific panels */
 }
 
 .panel.visible {
 	opacity: 1;
 	visibility: visible;
-	transform: translateY(0);
+	/* transform: translateY(0); */ /* Old transform */
+	transform: scale(1); /* New transform for visible state */
+	transition: opacity 0.2s ease-in, transform 0.2s ease-in, visibility 0s linear 0s; /* New transition */
 }
 
 /* Positioning and sizing for specific panels */
@@ -38,16 +42,25 @@
 .chartPanel {
 	top: 30px;
 	left: 50%;
-	width: 800px; /* Default width */
-	max-width: calc(100vw - 60px);
-	/* transform: translateX(-50%) is applied dynamically in component if this panel is centered */
+	/* width: 800px; Default width */ /* Changed as per task */
+	/* max-width: calc(100vw - 60px); */ /* Changed as per task */
+	width: 400px; /* New width */
+	max-width: calc(50vw - 45px); /* New max-width, same as overview/averages */
+	transform: translateX(-50%); /* Base centering transform, combines with .panel scale */
 }
 /* Chart panel when visible needs specific transform if centered */
+/* .chartPanel.visible rule is no longer needed here for transform, */
+/* as .panel.visible provides scale(1) and .chartPanel provides translateX(-50%) */
+/*
 .chartPanel.visible {
-	transform: translateX(-50%) translateY(0); /* Adjust if centered */
+	transform: translateX(-50%) scale(1); // Explicit if preferred, but composed by default
 }
-.chartPanel.visibleTransform{ /* If you need to apply transform separately */
-    transform: translateX(-50%) translateY(0);
+*/
+/* .chartPanel.visibleTransform class can be removed if not used elsewhere for this specific combined transform */
+.chartPanel.visibleTransform { 
+    /* This class might be redundant now or needs re-evaluation if it was used by StatsPanel.js explicitly */
+    /* For now, let's assume it might be used for direct state setting if .panel.visible isn't enough */
+     transform: translateX(-50%) scale(1);
 }
 
 

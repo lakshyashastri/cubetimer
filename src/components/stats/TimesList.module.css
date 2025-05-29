@@ -53,13 +53,16 @@
 	font-size: 1.1rem;
 	font-weight: bold;
 	color: #ffffff;
+	flex-grow: 1;       /* Added */
+	text-align: center; /* Added */
 }
 
 .timeIndex {
 	color: #888888;
 	font-size: 0.9rem;
-	margin-right: auto; /* Pushes delete button to the right */
-	padding-right: 10px; /* Space before time value */
+	/* margin-right: auto; /* Removed to allow timeValue to grow */
+	padding-right: 10px; /* Space between index and timeValue */
+	flex-shrink: 0; /* Prevent shrinking if index numbers get very long */
 }
 
 .deleteBtn { /* Renamed from time-delete */
