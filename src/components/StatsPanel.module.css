@@ -40,25 +40,28 @@
 }
 
 .chartPanel {
-	top: 30px;
+	top: 50%; /* Changed for vertical centering */
 	left: 50%;
 	width: 800px; /* Restored width */
 	max-width: calc(100vw - 60px); /* Restored max-width */
-	transform: translateX(-50%); /* Base centering transform, combines with .panel scale */
+	transform: translateX(-50%) translateY(-50%); /* Adjusted for vertical centering */
 }
 /* Chart panel when visible needs specific transform if centered */
 /* .chartPanel.visible rule is no longer needed here for transform, */
-/* as .panel.visible provides scale(1) and .chartPanel provides translateX(-50%) */
+/* as .panel.visible provides scale(1) and .chartPanel's new base transform handles centering */
 /*
 .chartPanel.visible {
-	transform: translateX(-50%) scale(1); // Explicit if preferred, but composed by default
+	// This would be redundant if .chartPanel has the full translate and .panel.visible has scale(1)
 }
 */
-/* .chartPanel.visibleTransform class can be removed if not used elsewhere for this specific combined transform */
+/* .chartPanel.visibleTransform class should also reflect the new centering if used */
 .chartPanel.visibleTransform { 
-    /* This class might be redundant now or needs re-evaluation if it was used by StatsPanel.js explicitly */
-    /* For now, let's assume it might be used for direct state setting if .panel.visible isn't enough */
-     transform: translateX(-50%) scale(1);
+    /* This class might be redundant. If StatsPanel.js adds this when visible,
+       it should ensure the full transform including scale(1) from .panel.visible is achieved.
+       The base .chartPanel now has full centering. .panel.visible adds scale(1).
+       So this class, if used, is to ensure the composed state explicitly.
+    */
+     transform: translateX(-50%) translateY(-50%) scale(1);
 }
 
 
