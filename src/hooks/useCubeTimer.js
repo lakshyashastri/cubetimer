@@ -25,6 +25,7 @@ const useCubeTimer = () => {
   // --- Internal Timer Logic Refs and State ---
   const startTimeRef = useRef(null);
   const intervalIdRef = useRef(null);
+  const autoResetTimerIdRef = useRef(null); // Ref for the auto-reset timeout
   const [prepareStartTime, setPrepareStartTime] = useState(null);
   const minPrepareTime = 100; // ms
 
@@ -40,7 +41,7 @@ const useCubeTimer = () => {
   useEffect(() => {
     localStorage.setItem('cubeTimerTimes', JSON.stringify(times));
     updateStats(); 
-  }, [times]);
+  }, [times]); // updateStats is memoized
 
   useEffect(() => {
     localStorage.setItem('cubeTimerBestAverages', JSON.stringify(bestAverages));
@@ -73,52 +74,33 @@ const useCubeTimer = () => {
     return sortedValues[Math.floor(length / 2)];
   }, []);
 
-  // Updated average calculation logic
   const calculateAverageFromValues = useCallback((timeValuesInput, N) => {
-    // Ensure we are working with an array of N numbers
     if (!timeValuesInput || timeValuesInput.length !== N) return null;
-    
-    // Filter out any non-numeric or null times to be safe, though data should be clean
     const timeValues = timeValuesInput.filter(t => typeof t === 'number' && !isNaN(t));
-    if (timeValues.length !== N) return null; // If filtering changed length, input was not N valid numbers
-
-    if (N < 3) return null; // Meaningful average requires at least 3 times (e.g., Ao3)
-
+    if (timeValues.length !== N) return null;
+    if (N < 3) return null;
     const sortedTimes = [...timeValues].sort((a, b) => a - b);
-
     if (N >= 5) {
-      // Standard cubing average: remove 1 best and 1 worst
       const trimmedTimes = sortedTimes.slice(1, -1); 
-      // This slice handles N=5 (slice(1,4) -> 3 items), N=12 (slice(1,11) -> 10 items)
-      // If N is large, e.g. N=100, slice(1, 99) -> 98 items.
-      // This is the standard for Ao5, Ao12, etc.
-      // For larger N like Ao50, Ao100, the 5% rule might be used elsewhere,
-      // but for typical speedcubing AoX, it's 1 best/1 worst.
-      // If the problem implies a strict 5% for *all* N>=5, this part would need adjustment.
-      // Assuming 1 best/1 worst for N>=5 as per common cubing practice for Ao5/Ao12.
-      if (trimmedTimes.length === 0) return null; // Should not happen if N >= 3 after slice(1,-1) from N>=5
+      if (trimmedTimes.length === 0) return null;
       return trimmedTimes.reduce((sum, t) => sum + t, 0) / trimmedTimes.length;
     } else { 
-      // For N = 3 or N = 4 (simple mean of all N times)
       return sortedTimes.reduce((sum, t) => sum + t, 0) / sortedTimes.length;
     }
   }, []);
 
   const calculateCurrentAverage = useCallback((N) => {
     if (times.length < N) return null;
-    // Get the N most recent times for "current" average
     const recentTimesValues = times.slice(0, N).map(t => t.time);
-    return calculateAverageFromValues(recentTimesValues, N); // Pass exactly N times
+    return calculateAverageFromValues(recentTimesValues, N);
   }, [times, calculateAverageFromValues]);
 
   const findOverallBestAverage = useCallback((N) => {
     if (times.length < N) return null;
     let overallBest = null;
-    // Iterate through all possible contiguous segments of N times
     for (let i = 0; i <= times.length - N; i++) {
       const windowTimeEntries = times.slice(i, i + N);
       const windowTimeValues = windowTimeEntries.map(t => t.time);
-      // Pass exactly N times to calculateAverageFromValues
       const currentWindowAvg = calculateAverageFromValues(windowTimeValues, N); 
       if (currentWindowAvg !== null) {
         if (overallBest === null || currentWindowAvg < overallBest) {
@@ -140,22 +122,18 @@ const useCubeTimer = () => {
     const bestTime = Math.min(...timeValues);
     const worstTime = Math.max(...timeValues);
     const medianTime = calculateMedian(timeValues);
-    const averageTime = timeValues.reduce((sum, t) => sum + t, 0) / totalSolves; // Overall mean
+    const averageTime = timeValues.reduce((sum, t) => sum + t, 0) / totalSolves;
     setStats({ totalSolves, bestTime, worstTime, medianTime, averageTime });
 
     const newAverages = {};
-    const newBestAverages = { ...bestAverages }; // Preserve existing bests
-    const avgSizes = [5, 12, 25, 50, 100]; // Standard average categories
-
+    const newBestAverages = { ...bestAverages };
+    const avgSizes = [5, 12, 25, 50, 100];
     for (const size of avgSizes) {
       const currentNMostRecentAvg = calculateCurrentAverage(size);
       newAverages[`ao${size}`] = currentNMostRecentAvg; 
-
-      // Only update best average if there are enough solves for that category
       if (times.length >= size) {
         const overallBestForSize = findOverallBestAverage(size);
         if (overallBestForSize !== null) {
-          // If no current best for this size, or new one is better
           if (newBestAverages[`ao${size}`] === null || overallBestForSize < newBestAverages[`ao${size}`]) {
             newBestAverages[`ao${size}`] = overallBestForSize;
           }
@@ -166,15 +144,44 @@ const useCubeTimer = () => {
     setBestAverages(newBestAverages);
   }, [times, bestAverages, calculateMedian, calculateCurrentAverage, findOverallBestAverage]);
 
-  // --- Timer Control Functions ---
+
+  const resetToReady = useCallback(() => {
+    if (autoResetTimerIdRef.current) {
+      clearTimeout(autoResetTimerIdRef.current);
+      autoResetTimerIdRef.current = null;
+    }
+    if (intervalIdRef.current) {
+      clearInterval(intervalIdRef.current);
+      intervalIdRef.current = null;
+    }
+    startTimeRef.current = null;
+    setTimerState('ready');
+    setTimerDisplay('READY');
+    setCurrentTime(0);
+  }, []); // formatTime not needed here as display is static 'READY'
+
   const startPreparing = useCallback(() => {
+    if (autoResetTimerIdRef.current) { // Clear pending auto-reset
+      clearTimeout(autoResetTimerIdRef.current);
+      autoResetTimerIdRef.current = null;
+    }
+    // Also ensure timer is fully reset if preparing from a 'stopped' state via quick space press
+    if (timerState === 'stopped') {
+        resetToReady(); // This will clear intervals and set display/state correctly before preparing
+    }
+
     setTimerState('preparing');
     setPrepareStartTime(Date.now());
     setTimerDisplay('HOLD...');
     setCurrentTime(0);
-  }, []);
+  }, [resetToReady, timerState]);
+
 
   const startTimer = useCallback(() => {
+    if (autoResetTimerIdRef.current) { // Should ideally be cleared by startPreparing
+        clearTimeout(autoResetTimerIdRef.current);
+        autoResetTimerIdRef.current = null;
+    }
     setTimerState('running');
     startTimeRef.current = performance.now();
     setCurrentTime(0); 
@@ -209,18 +216,16 @@ const useCubeTimer = () => {
       id: Date.now(),
     };
     setTimes(prevTimes => [newTimeEntry, ...prevTimes]);
-  }, [timerState, formatTime]); 
 
-  const resetToReady = useCallback(() => {
-    if (intervalIdRef.current) {
-      clearInterval(intervalIdRef.current);
-      intervalIdRef.current = null;
+    // Clear any existing auto-reset timeout before setting a new one
+    if (autoResetTimerIdRef.current) {
+      clearTimeout(autoResetTimerIdRef.current);
     }
-    startTimeRef.current = null;
-    setTimerState('ready');
-    setTimerDisplay('READY');
-    setCurrentTime(0);
-  }, []);
+    autoResetTimerIdRef.current = setTimeout(() => {
+      resetToReady(); // resetToReady already nullifies autoResetTimerIdRef.current
+    }, 750);
+
+  }, [timerState, formatTime, resetToReady]); 
 
   // --- Data Management Functions ---
   const saveTime = useCallback((time) => {
@@ -235,6 +240,11 @@ const useCubeTimer = () => {
   const clearAllTimes = useCallback(() => {
     setTimes([]);
     setBestAverages({ ao5: null, ao12: null, ao25: null, ao50: null, ao100: null });
+    // Clear any pending auto-reset if all times are cleared
+    if (autoResetTimerIdRef.current) {
+        clearTimeout(autoResetTimerIdRef.current);
+        autoResetTimerIdRef.current = null;
+    }
   }, []);
 
   // --- Effect for timer display updates during 'running' state ---
@@ -244,11 +254,14 @@ const useCubeTimer = () => {
     }
   }, [currentTime, timerState, formatTime]);
   
-  // Cleanup interval on unmount
+  // Cleanup interval and auto-reset timeout on unmount
   useEffect(() => {
     return () => {
       if (intervalIdRef.current) {
         clearInterval(intervalIdRef.current);
+      }
+      if (autoResetTimerIdRef.current) {
+        clearTimeout(autoResetTimerIdRef.current);
       }
     };
   }, []);

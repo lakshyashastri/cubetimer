@@ -76,15 +76,37 @@
 	line-height: 23px; /* Adjust for vertical centering of '×' */
 	text-align: center;
 	cursor: pointer;
-	transition: all 0.3s ease;
+	/* transition: all 0.3s ease; Ensure specific properties for smooth text/bg change */
+	transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
 	margin-left: 10px;
 	flex-shrink: 0; /* Prevent shrinking */
+	/* Ensure min-width to accommodate "Confirm?" text if needed, or adjust padding */
+	min-width: 25px; /* Keep circular shape if only icon */
+	padding: 0; /* Reset padding if width/height are fixed for icon */
+	box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
 
 .deleteBtn:hover {
 	background: #ff0044;
 	color: #000000;
 }
+
+.confirmDeleteBtn {
+	background-color: #cc3333; /* More vibrant red for confirm state */
+	border-color: #a52a2a;
+	color: #ffffff;
+	width: auto; /* Allow width to expand for text "Confirm?" */
+	min-width: 80px; /* Ensure enough space for "Confirm?" */
+	padding: 0 8px; /* Add some horizontal padding for text */
+	font-size: 0.75rem; /* Smaller font for "Confirm?" to fit */
+	line-height: 23px; /* Keep consistent height */
+}
+
+.confirmDeleteBtn:hover {
+	background-color: #e04343; /* Lighter red on hover */
+	border-color: #cc3333;
+}
+
 
 /* Custom scrollbar for timesList */
 .timesList::-webkit-scrollbar {

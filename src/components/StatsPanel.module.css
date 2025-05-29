@@ -42,10 +42,8 @@
 .chartPanel {
 	top: 30px;
 	left: 50%;
-	/* width: 800px; Default width */ /* Changed as per task */
-	/* max-width: calc(100vw - 60px); */ /* Changed as per task */
-	width: 400px; /* New width */
-	max-width: calc(50vw - 45px); /* New max-width, same as overview/averages */
+	width: 800px; /* Restored width */
+	max-width: calc(100vw - 60px); /* Restored max-width */
 	transform: translateX(-50%); /* Base centering transform, combines with .panel scale */
 }
 /* Chart panel when visible needs specific transform if centered */
@@ -117,8 +115,21 @@
 
 /* Panel Content */
 .panelContent {
-	padding: 20px 25px;
-	/* For scrollable content within a panel, if needed */
-	/* max-height: calc(500px - 70px); /* Example: panel max-height - header height */
-	/* overflow-y: auto; */ 
+	padding: 20px 25px; /* Default padding */
+	box-sizing: border-box; /* Ensure padding doesn't add to min-height */
+}
+
+/* Apply min-height to content areas of Overview and Chart panels for consistency */
+.overviewPanel > .panelContent,
+.chartPanel > .panelContent {
+  min-height: 320px; /* Accommodates 280px canvas + 2x20px padding in chartContainer */
+  display: flex; /* To allow content within to be centered or stretch if needed */
+  flex-direction: column; /* Stack content vertically */
+}
+
+/* Specific adjustments if chartContainer needs to fill this space */
+.chartPanel > .panelContent {
+	/* Ensure chartContainer inside panelContent can stretch if needed, but padding is on chartContainer itself */
+	/* Usually, the chartContainer's own padding and canvas size will define its height. */
+	/* This min-height on panelContent just ensures the panel itself is tall enough. */
 }

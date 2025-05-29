@@ -265,9 +265,7 @@ const PerformanceChart = ({ times, formatTime }) => {
         className={styles.performanceChartCanvas}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        // Set initial width and height for SSR or if rect calculation is delayed
-        width="760" 
-        height="300" 
+        // Width and height attributes removed, CSS and JS will manage dimensions
       />
       <div ref={tooltipRef} className={styles.chartTooltip}></div>
     </div>

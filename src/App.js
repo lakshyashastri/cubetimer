@@ -3,6 +3,7 @@ import useCubeTimer from './hooks/useCubeTimer';
 import TimerDisplay from './components/TimerDisplay';
 import StatsPanel from './components/StatsPanel';
 import ActionButton from './components/ActionButton';
+import ConfirmationModal from './components/modals/ConfirmationModal'; // Import the modal
 import './index.css'; // Global styles
 import appStyles from './App.module.css'; // For app-specific layout styles
 import timerDisplayStyles from './components/TimerDisplay.module.css'; // For timerWrapper
@@ -19,7 +20,6 @@ function App() {
   const {
     timerDisplay,
     timerState,
-    // currentTime, // Not directly used in App's render
     times,
     stats,
     averages,
@@ -30,13 +30,13 @@ function App() {
     stopTimer,
     resetToReady,
     deleteTime,
-    clearAllTimes,
+    clearAllTimes, // This function from the hook will be called on confirm
     minPrepareTime,
     prepareStartTime,
   } = useCubeTimer();
 
   const [panelVisibility, setPanelVisibility] = useState(initialPanelVisibility);
-  // const [isSpacePressed, setIsSpacePressed] = useState(false); // Not directly needed in App state
+  const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false); // State for modal
 
   const togglePanel = (panelName) => {
     setPanelVisibility(prev => ({ ...prev, [panelName]: !prev[panelName] }));
@@ -45,10 +45,8 @@ function App() {
   const toggleAllPanels = () => {
     const anyPanelVisible = Object.values(panelVisibility).some(visible => visible);
     if (anyPanelVisible) {
-      // If any panel is visible, hide all
       setPanelVisibility({ overview: false, averages: false, times: false, chart: false });
     } else {
-      // If no panels are visible, show all (or a default set)
       setPanelVisibility({ overview: true, averages: true, times: true, chart: true });
     }
   };
@@ -56,30 +54,30 @@ function App() {
   const handleKeyDown = useCallback((e) => {
     if (e.code !== 'Space' || e.repeat) return;
     e.preventDefault();
-    // setIsSpacePressed(true); // Managed by keyUp
+    if (isClearConfirmOpen) return; // Prevent timer interaction when modal is open
 
     if (timerState === 'ready') {
       startPreparing();
     } else if (timerState === 'running') {
       stopTimer();
-    } else if (timerState === 'stopped') { // Allow resetting from stopped state
+    } else if (timerState === 'stopped') {
       resetToReady();
     }
-  }, [timerState, startPreparing, stopTimer, resetToReady]);
+  }, [timerState, startPreparing, stopTimer, resetToReady, isClearConfirmOpen]);
 
   const handleKeyUp = useCallback((e) => {
     if (e.code !== 'Space') return;
-    // setIsSpacePressed(false);
+    if (isClearConfirmOpen) return; // Prevent timer interaction when modal is open
 
     if (timerState === 'preparing') {
-      const prepareTime = Date.now() - (prepareStartTime || 0); // Ensure prepareStartTime is not null
+      const prepareTime = Date.now() - (prepareStartTime || 0);
       if (prepareTime >= minPrepareTime) {
         startTimer();
       } else {
         resetToReady(); 
       }
     }
-  }, [timerState, prepareStartTime, minPrepareTime, startTimer, resetToReady]);
+  }, [timerState, prepareStartTime, minPrepareTime, startTimer, resetToReady, isClearConfirmOpen]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -90,11 +88,19 @@ function App() {
     };
   }, [handleKeyDown, handleKeyUp]);
 
-  // Updated logic: Timer area shifts only if the chart panel is visible
   const shouldTimerAreaShift = panelVisibility.chart;
 
+  // Function to open the confirmation modal
+  const handleRequestClearAll = () => {
+    setIsClearConfirmOpen(true);
+  };
+
+  const handleConfirmClearAll = () => {
+    clearAllTimes();
+    setIsClearConfirmOpen(false);
+  };
+
   return (
-    // Using a fragment as appStyles.appContainer isn't strictly necessary yet
     <> 
       <div className={`${timerDisplayStyles.timerWrapper} ${shouldTimerAreaShift ? appStyles.timerAreaShifted : ''}`}>
         <TimerDisplay displayTime={timerDisplay} timerState={timerState} />
@@ -108,7 +114,17 @@ function App() {
         times={times}
         formatTime={formatTime}
         deleteTime={deleteTime}
-        clearAllTimes={clearAllTimes}
+        // Pass handleRequestClearAll instead of clearAllTimes directly
+        onRequestClearAllTimes={handleRequestClearAll} 
+      />
+      <ConfirmationModal
+        isOpen={isClearConfirmOpen}
+        onClose={() => setIsClearConfirmOpen(false)}
+        onConfirm={handleConfirmClearAll}
+        title="Confirm Clear All Times"
+        message="Are you absolutely sure you want to delete all your solve times? This action is irreversible!"
+        confirmText="Yes, Delete All"
+        cancelText="Cancel"
       />
     </>
   );
