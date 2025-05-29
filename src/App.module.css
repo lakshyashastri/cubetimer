@@ -1,0 +1,12 @@
+/* src/App.module.css */
+.appContainer {
+  /* You can add root app container styles here if needed, 
+     but for now, it's mainly for the shifted class.
+     Ensure body in index.css has overflow: hidden if not already.
+  */
+}
+
+.timerAreaShifted {
+  transform: translateY(120px);
+  transition: transform 0.3s ease;
+}

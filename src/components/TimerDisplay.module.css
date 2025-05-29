@@ -1,0 +1,71 @@
+/* Styles for the main wrapper around the timer, for centering */
+.timerWrapper {
+	height: 100vh; /* Or adjust as needed if layout changes */
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: relative; /* If needed for z-index or other positioning contexts */
+	z-index: 1;
+	transition: all 0.3s ease; /* For potential future transitions like the chart visibility */
+}
+
+/* Base style for the timer display */
+.timer {
+	font-size: 8rem;
+	font-weight: bold;
+	font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono",
+		"Source Code Pro", "Fira Code", "Consolas", monospace;
+	padding: 60px;
+	border-radius: 20px;
+	transition: all 0.3s ease;
+	letter-spacing: 5px;
+	background: #000000;
+	border: 3px solid #333333;
+	user-select: none;
+	text-align: center;
+}
+
+/* State-specific styles */
+.ready {
+	color: #00ff88;
+	border-color: #00ff88;
+	text-shadow: 0 0 30px rgba(0, 255, 136, 0.4);
+	box-shadow: 0 0 50px rgba(0, 255, 136, 0.1);
+}
+
+.preparing {
+	color: #ff8800;
+	border-color: #ff8800;
+	text-shadow: 0 0 30px rgba(255, 136, 0, 0.4);
+	animation: glow-wave 2s ease-in-out infinite;
+}
+
+.running {
+	color: #0088ff;
+	border-color: #0088ff;
+	text-shadow: 0 0 30px rgba(0, 136, 255, 0.4);
+	box-shadow: 0 0 50px rgba(0, 136, 255, 0.1);
+}
+
+.stopped {
+	color: #ff0044;
+	border-color: #ff0044;
+	text-shadow: 0 0 30px rgba(255, 0, 68, 0.4);
+	box-shadow: 0 0 50px rgba(255, 0, 68, 0.1);
+}
+
+/* Keyframes for the preparing animation */
+@keyframes glow-wave {
+	0% {
+		box-shadow: 0 0 20px rgba(255, 136, 0, 0.1),
+			0 0 40px rgba(255, 136, 0, 0.1), 0 0 60px rgba(255, 136, 0, 0.1);
+	}
+	50% {
+		box-shadow: 0 0 30px rgba(255, 136, 0, 0.3),
+			0 0 60px rgba(255, 136, 0, 0.2), 0 0 90px rgba(255, 136, 0, 0.1);
+	}
+	100% {
+		box-shadow: 0 0 20px rgba(255, 136, 0, 0.1),
+			0 0 40px rgba(255, 136, 0, 0.1), 0 0 60px rgba(255, 136, 0, 0.1);
+	}
+}
