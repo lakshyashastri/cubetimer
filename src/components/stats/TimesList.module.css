@@ -1,0 +1,102 @@
+.timesControls {
+	margin-bottom: 20px;
+}
+
+.clearTimesBtn { /* Renamed to avoid conflict with panel's closeBtn */
+	background: #000000;
+	color: #ff0044;
+	border: 2px solid #ff0044;
+	padding: 10px 20px;
+	border-radius: 8px;
+	font-size: 1rem;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	width: 100%;
+}
+
+.clearTimesBtn:hover {
+	background: #ff0044;
+	color: #000000;
+}
+
+.timesList {
+	max-height: 300px; /* Or adjust as needed */
+	overflow-y: auto;
+	margin: -10px -5px; /* Original style had this, adjust if needed */
+	padding: 10px 5px; /* Original style had this, adjust if needed */
+}
+
+.timeEntry {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 12px 15px;
+	margin-bottom: 8px;
+	background: #0a0a0a;
+	border-radius: 8px;
+	border: 1px solid #222222;
+	transition: all 0.3s ease;
+}
+
+.timeEntry:hover {
+	background: #151515;
+	border-color: #333333;
+}
+
+.timeEntry:last-child {
+	margin-bottom: 0;
+}
+
+.timeValue {
+	font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono",
+		"Source Code Pro", "Fira Code", "Consolas", monospace;
+	font-size: 1.1rem;
+	font-weight: bold;
+	color: #ffffff;
+}
+
+.timeIndex {
+	color: #888888;
+	font-size: 0.9rem;
+	margin-right: auto; /* Pushes delete button to the right */
+	padding-right: 10px; /* Space before time value */
+}
+
+.deleteBtn { /* Renamed from time-delete */
+	background: #000000;
+	color: #ff0044;
+	border: 1px solid #ff0044;
+	border-radius: 50%;
+	width: 25px;
+	height: 25px;
+	font-size: 12px; /* Consider using an icon font or SVG instead */
+	line-height: 23px; /* Adjust for vertical centering of '×' */
+	text-align: center;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	margin-left: 10px;
+	flex-shrink: 0; /* Prevent shrinking */
+}
+
+.deleteBtn:hover {
+	background: #ff0044;
+	color: #000000;
+}
+
+/* Custom scrollbar for timesList */
+.timesList::-webkit-scrollbar {
+	width: 6px;
+}
+
+.timesList::-webkit-scrollbar-track {
+	background: transparent; /* Or #1a1a1a if you want a subtle track */
+}
+
+.timesList::-webkit-scrollbar-thumb {
+	background: #333333;
+	border-radius: 3px;
+}
+
+.timesList::-webkit-scrollbar-thumb:hover {
+	background: #555555;
+}

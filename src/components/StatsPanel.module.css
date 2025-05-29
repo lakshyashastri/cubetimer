@@ -1,0 +1,105 @@
+/* Base style for all floating panels */
+.panel {
+	position: fixed;
+	background: #111111;
+	border: 1px solid #333333;
+	border-radius: 15px;
+	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+	backdrop-filter: blur(10px); /* May need vendor prefixes or check browser support */
+	z-index: 50;
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(20px);
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	max-height: 500px; /* Default max-height, can be overridden by specific panels */
+}
+
+.panel.visible {
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0);
+}
+
+/* Positioning and sizing for specific panels */
+.overviewPanel {
+	top: 30px;
+	left: 30px;
+	width: 400px;
+	max-width: calc(50vw - 45px);
+}
+
+.averagesPanel {
+	top: 30px;
+	right: 30px;
+	width: 400px;
+	max-width: calc(50vw - 45px);
+}
+
+.chartPanel {
+	top: 30px;
+	left: 50%;
+	width: 800px; /* Default width */
+	max-width: calc(100vw - 60px);
+	/* transform: translateX(-50%) is applied dynamically in component if this panel is centered */
+}
+/* Chart panel when visible needs specific transform if centered */
+.chartPanel.visible {
+	transform: translateX(-50%) translateY(0); /* Adjust if centered */
+}
+.chartPanel.visibleTransform{ /* If you need to apply transform separately */
+    transform: translateX(-50%) translateY(0);
+}
+
+
+.timesPanel {
+	top: 450px; /* Default, can be overridden */
+	left: 30px;
+	width: 400px;
+	max-width: calc(50vw - 45px);
+	/* transition is already on .panel */
+}
+
+/* Panel Header */
+.panelHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 20px 25px 15px;
+	border-bottom: 1px solid #333333;
+}
+
+.panelHeader h3 { /* Targeting h3 within panelHeader */
+	color: #ffffff;
+	font-size: 1.4rem;
+	font-weight: 300;
+	margin: 0;
+}
+
+.closeBtn {
+	background: none;
+	border: none;
+	color: #888888;
+	font-size: 24px;
+	cursor: pointer;
+	padding: 0;
+	width: 30px;
+	height: 30px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	transition: all 0.3s ease;
+}
+
+.closeBtn:hover {
+	background: #222222;
+	color: #ffffff;
+}
+
+/* Panel Content */
+.panelContent {
+	padding: 20px 25px;
+	/* For scrollable content within a panel, if needed */
+	/* max-height: calc(500px - 70px); /* Example: panel max-height - header height */
+	/* overflow-y: auto; */ 
+}

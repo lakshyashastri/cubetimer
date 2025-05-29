@@ -1,0 +1,73 @@
+.averagesContainer {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.avgItem {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 16px 20px;
+	background: #0a0a0a;
+	border-radius: 10px;
+	border: 1px solid #222222;
+	transition: all 0.3s ease;
+}
+
+.avgItem:hover {
+	background: #151515;
+	border-color: #333333;
+	transform: translateY(-1px);
+}
+
+.avgLabel {
+	font-size: 1rem;
+	color: #888888;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	min-width: 40px; /* e.g., for "AO5" */
+}
+
+.avgValues {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 4px;
+}
+
+.avgCurrent {
+	font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono",
+		"Source Code Pro", "Fira Code", "Consolas", monospace;
+	font-size: 1.1rem;
+	font-weight: bold;
+	color: #ffffff;
+}
+
+.avgBestContainer { /* To group the "best: " prefix and the value */
+  display: flex;
+  align-items: baseline; /* Align "best: " and the time nicely */
+}
+
+.avgBestPrefix {
+  font-size: 0.8rem;
+  color: #666666;
+  margin-right: 4px; /* Space between "best: " and the time */
+}
+
+.avgBest {
+	font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono",
+		"Source Code Pro", "Fira Code", "Consolas", monospace;
+	font-size: 0.9rem;
+	color: #00ff88;
+	opacity: 0.8;
+}
+
+.noAveragesMessage {
+	text-align: center;
+	padding: 40px 20px;
+	color: #666666;
+	font-style: italic;
+	font-size: 0.95rem;
+}
