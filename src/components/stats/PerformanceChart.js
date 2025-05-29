@@ -9,7 +9,7 @@ const PerformanceChart = ({ times, formatTime }) => {
   const [animationProgress, setAnimationProgress] = useState(0);
   const animationFrameIdRef = useRef(null);
   const animationStartTimeRef = useRef(null);
-  const animationDurationRef = useRef(500);
+  const animationDurationRef = useRef(1200); // Changed from 500 to 1200
   const prevTimesLengthRef = useRef(times.length);
 
   const [chartRenderData, setChartRenderData] = useState(null); 
