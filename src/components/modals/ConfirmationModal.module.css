@@ -1,94 +1,94 @@
 .modalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000; /* High z-index to be on top */
-  backdrop-filter: blur(3px);
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.7);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 1000; /* High z-index to be on top */
+	backdrop-filter: blur(3px);
 }
 
 .modalContent {
-  background-color: #2c2c2e; /* Dark grey, slightly lighter than deep black */
-  padding: 25px 30px;
-  border-radius: 12px;
-  border: 1px solid #555;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-  width: 90%;
-  max-width: 450px;
-  border-top: 5px solid #cc0000; /* Red top border for danger indication */
-  animation: fadeInScaleUp 0.3s ease-out;
+	background-color: #2c2c2e; /* Dark grey, slightly lighter than deep black */
+	padding: 25px 30px;
+	border-radius: 12px;
+	border: 1px solid #555;
+	box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+	width: 90%;
+	max-width: 450px;
+	border-top: 5px solid #cc0000; /* Red top border for danger indication */
+	animation: fadeInScaleUp 0.3s ease-out;
 }
 
 @keyframes fadeInScaleUp {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+	from {
+		opacity: 0;
+		transform: scale(0.9);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
 }
 
 .modalTitle {
-  font-size: 1.6rem;
-  font-weight: 600;
-  margin-top: 0;
-  margin-bottom: 15px;
-  color: #f5f5f7; /* Light color for text */
-  display: flex;
-  align-items: center;
+	font-size: 1.6rem;
+	font-weight: 600;
+	margin-top: 0;
+	margin-bottom: 15px;
+	color: #f5f5f7; /* Light color for text */
+	display: flex;
+	align-items: center;
 }
 
 .modalMessage {
-  margin-bottom: 25px;
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #d1d1d6; /* Slightly dimmer than title */
+	margin-bottom: 25px;
+	font-size: 1rem;
+	line-height: 1.6;
+	color: #d1d1d6; /* Slightly dimmer than title */
 }
 
 .modalActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 15px;
+	display: flex;
+	justify-content: flex-end;
+	gap: 15px;
 }
 
 .modalButton {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  min-width: 100px;
+	padding: 10px 20px;
+	border: none;
+	border-radius: 8px;
+	font-size: 0.95rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.2s ease, transform 0.1s ease;
+	min-width: 100px;
 }
 
 .modalButton:active {
-    transform: scale(0.97);
+	transform: scale(0.97);
 }
 
 .cancelButton {
-  background-color: #48484a; /* Medium grey */
-  color: #f5f5f7;
-  border: 1px solid #5c5c5e;
+	background-color: #48484a; /* Medium grey */
+	color: #f5f5f7;
+	border: 1px solid #5c5c5e;
 }
 
 .cancelButton:hover {
-  background-color: #58585a;
+	background-color: #58585a;
 }
 
 .confirmButton {
-  background-color: #cc3333; /* More vibrant red */
-  color: #ffffff;
-  border: 1px solid #a52a2a; /* Darker red border */
+	background-color: #cc3333; /* More vibrant red */
+	color: #ffffff;
+	border: 1px solid #a52a2a; /* Darker red border */
 }
 
 .confirmButton:hover {
-  background-color: #e04343; /* Lighter red on hover */
+	background-color: #e04343; /* Lighter red on hover */
 }

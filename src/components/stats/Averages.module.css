@@ -45,15 +45,16 @@
 	color: #ffffff;
 }
 
-.avgBestContainer { /* To group the "best: " prefix and the value */
-  display: flex;
-  align-items: baseline; /* Align "best: " and the time nicely */
+.avgBestContainer {
+	/* To group the "best: " prefix and the value */
+	display: flex;
+	align-items: baseline; /* Align "best: " and the time nicely */
 }
 
 .avgBestPrefix {
-  font-size: 0.8rem;
-  color: #666666;
-  margin-right: 4px; /* Space between "best: " and the time */
+	font-size: 0.8rem;
+	color: #666666;
+	margin-right: 4px; /* Space between "best: " and the time */
 }
 
 .avgBest {

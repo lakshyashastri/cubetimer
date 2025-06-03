@@ -7,7 +7,8 @@
 	overflow: hidden; /* Ensures padding is respected by canvas */
 }
 
-.performanceChartCanvas { /* Formerly #performance-chart */
+.performanceChartCanvas {
+	/* Formerly #performance-chart */
 	display: block;
 	width: 100%;
 	height: 280px; /* Fixed display height */
@@ -29,13 +30,13 @@
 	opacity: 0;
 	visibility: hidden;
 	transform: translateY(-10px) translateX(-50%); /* Start above and centered */
-	transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
-                visibility 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
-                transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+		visibility 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+		transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 	z-index: 10; /* Ensure it's above the canvas */
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 	backdrop-filter: blur(5px); /* Subtle blur for tooltip background */
-    white-space: nowrap; /* Prevent wrapping */
+	white-space: nowrap; /* Prevent wrapping */
 }
 
 .chartTooltip.visible {
@@ -44,13 +45,15 @@
 	transform: translateY(-30px) translateX(-50%); /* Move further up when visible */
 }
 
-.tooltipSolve { /* Formerly .chart-tooltip-solve */
+.tooltipSolve {
+	/* Formerly .chart-tooltip-solve */
 	color: #888888;
 	font-size: 0.75rem;
 	margin-bottom: 2px;
 }
 
-.tooltipTime { /* Formerly .chart-tooltip-time */
+.tooltipTime {
+	/* Formerly .chart-tooltip-time */
 	color: #00ff88;
 	font-weight: bold;
 	font-size: 0.9rem;

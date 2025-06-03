@@ -2,7 +2,8 @@
 	margin-bottom: 20px;
 }
 
-.clearTimesBtn { /* Renamed to avoid conflict with panel's closeBtn */
+.clearTimesBtn {
+	/* Renamed to avoid conflict with panel's closeBtn */
 	background: #000000;
 	color: #ff0044;
 	border: 2px solid #ff0044;
@@ -53,7 +54,7 @@
 	font-size: 1.1rem;
 	font-weight: bold;
 	color: #ffffff;
-	flex-grow: 1;       /* Added */
+	flex-grow: 1; /* Added */
 	text-align: center; /* Added */
 }
 
@@ -65,7 +66,8 @@
 	flex-shrink: 0; /* Prevent shrinking if index numbers get very long */
 }
 
-.deleteBtn { /* Renamed from time-delete */
+.deleteBtn {
+	/* Renamed from time-delete */
 	background: #000000;
 	color: #ff0044;
 	border: 1px solid #ff0044;
@@ -77,7 +79,8 @@
 	text-align: center;
 	cursor: pointer;
 	/* transition: all 0.3s ease; Ensure specific properties for smooth text/bg change */
-	transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+	transition: background-color 0.2s ease, color 0.2s ease,
+		border-color 0.2s ease, transform 0.1s ease;
 	margin-left: 10px;
 	flex-shrink: 0; /* Prevent shrinking */
 	/* Ensure min-width to accommodate "Confirm?" text if needed, or adjust padding */
@@ -106,7 +109,6 @@
 	background-color: #e04343; /* Lighter red on hover */
 	border-color: #cc3333;
 }
-
 
 /* Custom scrollbar for timesList */
 .timesList::-webkit-scrollbar {

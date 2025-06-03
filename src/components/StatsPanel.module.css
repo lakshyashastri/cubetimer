@@ -5,14 +5,17 @@
 	border: 1px solid #333333;
 	border-radius: 15px;
 	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-	backdrop-filter: blur(10px); /* May need vendor prefixes or check browser support */
+	backdrop-filter: blur(
+		10px
+	); /* May need vendor prefixes or check browser support */
 	z-index: 50;
 	opacity: 0;
 	visibility: hidden;
 	/* transform: translateY(20px); */ /* Old transform */
 	transform: scale(0.95); /* New transform for hidden state */
 	/* transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); */ /* Old transition */
-	transition: opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0s linear 0.2s; /* New transition */
+	transition: opacity 0.2s ease-out, transform 0.2s ease-out,
+		visibility 0s linear 0.2s; /* New transition */
 	max-height: 500px; /* Default max-height, can be overridden by specific panels */
 }
 
@@ -21,7 +24,8 @@
 	visibility: visible;
 	/* transform: translateY(0); */ /* Old transform */
 	transform: scale(1); /* New transform for visible state */
-	transition: opacity 0.2s ease-in, transform 0.2s ease-in, visibility 0s linear 0s; /* New transition */
+	transition: opacity 0.2s ease-in, transform 0.2s ease-in,
+		visibility 0s linear 0s; /* New transition */
 }
 
 /* Positioning and sizing for specific panels */
@@ -40,30 +44,17 @@
 }
 
 .chartPanel {
-	top: 50%; /* Changed for vertical centering */
-	left: 50%;
-	width: 800px; /* Restored width */
-	max-width: calc(100vw - 60px); /* Restored max-width */
-	transform: translateX(-50%) translateY(-50%); /* Adjusted for vertical centering */
-}
-/* Chart panel when visible needs specific transform if centered */
-/* .chartPanel.visible rule is no longer needed here for transform, */
-/* as .panel.visible provides scale(1) and .chartPanel's new base transform handles centering */
-/*
-.chartPanel.visible {
-	// This would be redundant if .chartPanel has the full translate and .panel.visible has scale(1)
-}
-*/
-/* .chartPanel.visibleTransform class should also reflect the new centering if used */
-.chartPanel.visibleTransform { 
-    /* This class might be redundant. If StatsPanel.js adds this when visible,
-       it should ensure the full transform including scale(1) from .panel.visible is achieved.
-       The base .chartPanel now has full centering. .panel.visible adds scale(1).
-       So this class, if used, is to ensure the composed state explicitly.
-    */
-     transform: translateX(-50%) translateY(-50%) scale(1);
+	top: 30px; /* Position in line with other top panels */
+	left: 30%;
+	width: 800px;
+	max-width: calc(100vw - 60px);
+	transform: translateX(-50%) scale(0.95); /* Hidden state scales down */
 }
 
+/* Specific transform when the chart is visible */
+.chartPanelVisibleTransform {
+	transform: translateX(-50%) scale(1);
+}
 
 .timesPanel {
 	top: 450px; /* Default, can be overridden */
@@ -88,7 +79,8 @@
 	border-bottom: 1px solid #333333;
 }
 
-.panelHeader h3 { /* Targeting h3 within panelHeader */
+.panelHeader h3 {
+	/* Targeting h3 within panelHeader */
 	color: #ffffff;
 	font-size: 1.4rem;
 	font-weight: 300;
@@ -125,9 +117,9 @@
 /* Apply min-height to content areas of Overview and Chart panels for consistency */
 .overviewPanel > .panelContent,
 .chartPanel > .panelContent {
-  min-height: 320px; /* Accommodates 280px canvas + 2x20px padding in chartContainer */
-  display: flex; /* To allow content within to be centered or stretch if needed */
-  flex-direction: column; /* Stack content vertically */
+	min-height: 320px; /* Accommodates 280px canvas + 2x20px padding in chartContainer */
+	display: flex; /* To allow content within to be centered or stretch if needed */
+	flex-direction: column; /* Stack content vertically */
 }
 
 /* Specific adjustments if chartContainer needs to fill this space */

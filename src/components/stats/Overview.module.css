@@ -22,7 +22,8 @@
 	transform: translateY(-1px);
 }
 
-.fullWidth { /* Modifier for statItem */
+.fullWidth {
+	/* Modifier for statItem */
 	grid-column: 1 / -1;
 }
 
